@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public class LogParser {
 
-    public static <K, V extends Comparable<V>> LinkedHashMap<K, V> getHighestAvg(Map<K, V> map, int topN) {
+    private static <K, V extends Comparable<V>> LinkedHashMap<K, V> getHighestAvg(Map<K, V> map, int topN) {
         LinkedHashMap<K, V> longestDurations = new LinkedHashMap<>();
         for (int i = 0; i < topN ; i++) {
             Map.Entry<K, V> maxEntry = null;
@@ -31,7 +31,7 @@ public class LogParser {
                 try {
                     long startTime = System.nanoTime();
                     String fileName = args[0];
-                    int N = Integer.parseInt(args[1]);
+                    int topN = Integer.parseInt(args[1]);
                     File file = new File(fileName);
 
                     if (file.exists() && file.isFile()) {
@@ -79,17 +79,17 @@ public class LogParser {
                         }
 
                         Map<String, Integer> topRequests;
-                        if (N > averageRequestDurationPerResource.size()) {
+                        if (topN > averageRequestDurationPerResource.size()) {
                             topRequests = averageRequestDurationPerResource;
                         } else {
-                            topRequests = getHighestAvg(averageRequestDurationPerResource, N);
+                            topRequests = getHighestAvg(averageRequestDurationPerResource, topN);
                         }
 
                         for (Map.Entry request : topRequests.entrySet()) {
                             System.out.println("Resource: "+ request.getKey() + " | Average request duration: " + request.getValue() + " ms");
                         }
 
-                        System.out.printf("\n  Hour     Frequency");
+                        System.out.print("\n  Hour     Frequency");
                         for (String key : timestamps.keySet()) {
                             System.out.printf("\n%5s%13d", key, timestamps.get(key));
                         }
@@ -105,7 +105,7 @@ public class LogParser {
                     System.err.println("Try 'java -jar assignment.jar -h' for more information.");
                     System.exit(1);
                 } catch (NumberFormatException e) {
-                    System.err.println("ERROR: Argument " + args[1] + " must be an integer.");
+                    System.err.println("ERROR: Second argument must be an integer.");
                     System.err.println("Try 'java -jar assignment.jar -h' for more information.");
                     System.exit(1);
                 }

@@ -30,6 +30,17 @@ public class LogParser {
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
+    private static HashMap<String, Integer> getAverageRequestDuration(Map<String, List<Integer>> map) {
+        HashMap<String, Integer> averageRequestDurationPerResource = new HashMap<>();
+        for (String key : map.keySet()) {
+            List<Integer> resourceRequestDurations = map.get(key);
+            int sumOfResourceRequestDurations = resourceRequestDurations.stream().mapToInt(Integer::intValue).sum();
+            int averageResourceDuration = sumOfResourceRequestDurations / resourceRequestDurations.size();
+            averageRequestDurationPerResource.put(key, averageResourceDuration);
+        }
+        return averageRequestDurationPerResource;
+    }
+
     public static void main(String[] args) {
         if (args.length == 1 && args[0].equals("-h")) {
             System.out.println("Run the program as 'java -jar assignment.jar file_name N'");
@@ -81,14 +92,7 @@ public class LogParser {
                         }
                         fileInputStream.close();
 
-                        Map<String, Integer> averageRequestDurationPerResource = new HashMap<>();
-                        for (String key : resources.keySet()) {
-                            List<Integer> resourceRequestDurations = resources.get(key);
-                            int sumResourceRequestDurations = resourceRequestDurations.stream().mapToInt(Integer::intValue).sum();
-                            int averageDuration = sumResourceRequestDurations / resourceRequestDurations.size();
-                            averageRequestDurationPerResource.put(key, averageDuration);
-                        }
-
+                        Map<String, Integer> averageRequestDurationPerResource = getAverageRequestDuration(resources);
                         Map<String, Integer> topRequests;
                         if (topN > averageRequestDurationPerResource.size()) {
                             topRequests = sortMap(averageRequestDurationPerResource);

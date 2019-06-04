@@ -30,7 +30,7 @@ public class LogParser {
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
-    private static HashMap<String, Integer> getAverageRequestDuration(Map<String, List<Integer>> map) {
+    private static HashMap<String, Integer> calculateAverageRequestDuration(Map<String, List<Integer>> map) {
         HashMap<String, Integer> averageRequestDurationPerResource = new HashMap<>();
         for (String key : map.keySet()) {
             List<Integer> resourceRequestDurations = map.get(key);
@@ -92,7 +92,7 @@ public class LogParser {
                         }
                         fileInputStream.close();
 
-                        Map<String, Integer> averageRequestDurationPerResource = getAverageRequestDuration(resources);
+                        Map<String, Integer> averageRequestDurationPerResource = calculateAverageRequestDuration(resources);
                         Map<String, Integer> topRequests;
                         if (topN > averageRequestDurationPerResource.size()) {
                             topRequests = sortMap(averageRequestDurationPerResource);

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class LogParser {
 
@@ -17,6 +18,16 @@ public class LogParser {
             map.remove(maxEntry.getKey());
         }
         return longestDurations;
+    }
+
+    private static LinkedHashMap<String, Integer> sortMap(Map<String, Integer> map) {
+        return map.entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
     public static void main(String[] args) {
@@ -58,6 +69,7 @@ public class LogParser {
                                 requestDurations = new ArrayList<>();
                                 requestDurations.add(requestDuration);
                             }
+                            resources.put(resource, requestDurations);
 
                             if (timestamps.containsKey(timestamp)) {
                                 hourFrequency = timestamps.get(timestamp);
@@ -65,7 +77,6 @@ public class LogParser {
                             } else {
                                 hourFrequency = 1;
                             }
-                            resources.put(resource, requestDurations);
                             timestamps.put(timestamp, hourFrequency);
                         }
                         fileInputStream.close();
@@ -80,7 +91,7 @@ public class LogParser {
 
                         Map<String, Integer> topRequests;
                         if (topN > averageRequestDurationPerResource.size()) {
-                            topRequests = averageRequestDurationPerResource;
+                            topRequests = sortMap(averageRequestDurationPerResource);
                         } else {
                             topRequests = getHighestAvg(averageRequestDurationPerResource, topN);
                         }
@@ -89,7 +100,7 @@ public class LogParser {
                             System.out.println("Resource: "+ request.getKey() + " | Average request duration: " + request.getValue() + " ms");
                         }
 
-                        System.out.print("\n  Hour     Frequency");
+                        System.out.printf("\n%5s%13s",  "Hour", "Frequency");
                         for (String key : timestamps.keySet()) {
                             System.out.printf("\n%5s%13d", key, timestamps.get(key));
                         }
@@ -98,10 +109,10 @@ public class LogParser {
                         long durationInMillis = TimeUnit.NANOSECONDS.toMillis(durationInNano);
                         System.out.println("\nTime taken to run the program: " + durationInMillis + " ms.");
                     } else {
-                        System.err.println("ERROR: Couldn't read designated file.");
+                        System.err.println("ERROR: Couldn't read the designated file.");
                     }
                 } catch (IOException e) {
-                    System.err.println("ERROR: Couldn't read designated file.");
+                    System.err.println("ERROR: Couldn't read the designated file.");
                     System.err.println("Try 'java -jar assignment.jar -h' for more information.");
                     System.exit(1);
                 } catch (NumberFormatException e) {
